@@ -4,28 +4,95 @@
 <meta charset="utf-8">
 <title>Aplic. Web de jQuery Mobile</title>
 <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 
-<style>
-	#yourimage {
-		width:100%;	
-	}
-	
-	#swatches {
-		width: 100%;
-		height: 50px;	
-	}
+<script>
+ var pictureSource;   // Origen de la imagen
+    var destinationType; // Formato del valor retornado
 
-	.swatch {
-		width:18%;
-		height: 50px;
-		border-style:solid;
-		border-width:thin;	
-		float: left;
-		margin-right: 3px;	
-	}
-	</style>
+    // Espera a que PhoneGap conecte con el dispositivo.
+    //
+    document.addEventListener("deviceready",onDeviceReady,false);
+
+    // PhoneGap esta listo para usarse!
+    //
+    function onDeviceReady() {
+        pictureSource=navigator.camera.PictureSourceType;
+        destinationType=navigator.camera.DestinationType;
+    }
+
+    // Llamada cuando la foto se retorna sin problemas
+    //
+    function onPhotoDataSuccess(imageData) {
+      // Descomenta esta linea para ver la imagen codificada en base64
+      // console.log(imageData);
+
+      // Obtiene el elemento HTML de la imagen
+      //
+      var smallImage = document.getElementById('smallImage');
+
+      // Revela el elemento de la imagen
+      //
+      smallImage.style.display = 'block';
+
+      // Muestra la foto capturada
+      // Se usan reglas CSS para dimensionar la imagen
+      //
+      smallImage.src = "data:image/jpeg;base64," + imageData;
+    }
+
+    // Llamada cuando la foto se retorna sin problemas
+    //
+    function onPhotoURISuccess(imageURI) {
+      // Descomenta esta linea para ver la ruta URI al fichero de imagen 
+      // console.log(imageURI);
+
+      // Obtiene el elemento HTML de la imagen
+      //
+      var largeImage = document.getElementById('largeImage');
+
+      // Revela el elemento de la imagen
+      //
+      largeImage.style.display = 'block';
+
+      // Muestra la foto capturada
+      // Se usan reglas CSS para dimensionar la imagen
+      //
+      largeImage.src = imageURI;
+    }
+
+    // Un botón llamara a esta función
+    //
+    function capturePhoto() {
+      // Toma la imagen y la retorna como una string codificada en base64
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50 });
+    }
+
+    // Un botón llamara a esta función
+    //
+    function capturePhotoEdit() {
+      // Toma la imagen, permite editarla y la retorna como una string codificada en base64
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 20, allowEdit: true }); 
+    }
+
+    // Un botón llamara a esta función
+    //
+    function getPhoto(source) {
+      // Retorna la ruta del fichero de imagen desde el origen especificado
+      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50, 
+        destinationType: destinationType.FILE_URI,
+        sourceType: source });
+    }
+
+    // Llamado cuando algo malo ocurre
+    // 
+    function onFail(message) {
+      alert('Ocurrió un error: ' + message);
+    }
+
+    </script>
 
 </head> 
 <body> 
@@ -52,52 +119,13 @@
 	</div>
 	<div data-role="content">	
 		Prueba de camara 1
-        <input type="file" capture="camera" accept="image/*" id="takePictureField">
-        
-		<img id="yourimage">
+        <button onclick="capturePhoto();">Capturar foto</button> <br>
+    <button onclick="capturePhotoEdit();">Capturar foto editable</button> <br>
+    <button onclick="getPhoto(pictureSource.PHOTOLIBRARY);">Desde la librería de imágenes</button><br>
+    <button onclick="getPhoto(pictureSource.SAVEDPHOTOALBUM);">Desde el álbum de fotos</button><br>
+    <img style="display:none;width:60px;height:60px;" id="smallImage" src="" />
+    <img style="display:none;" id="largeImage" src="" />
 
-		<div id="swatches">
-			<div id="swatch0" class="swatch"></div>
-			<div id="swatch1" class="swatch"></div>
-			<div id="swatch2" class="swatch"></div>
-			<div id="swatch3" class="swatch"></div>
-			<div id="swatch4" class="swatch"></div>
-		</div>
-		
-    <script>
-	var desiredWidth;
-
-    $(document).ready(function() {
-        console.log('onReady');
-		$("#takePictureField").on("change",gotPic);
-		$("#yourimage").load(getSwatches);
-		desiredWidth = window.innerWidth;
-        
-        if(!("url" in window) && ("webkitURL" in window)) {
-            window.URL = window.webkitURL;   
-        }
-		
-	});
-
-	function getSwatches(){
-		var colorArr = createPalette($("#yourimage"), 5);
-		for (var i = 0; i < Math.min(5, colorArr.length); i++) {
-			$("#swatch"+i).css("background-color","rgb("+colorArr[i][0]+","+colorArr[i][1]+","+colorArr[i][2]+")");
-			console.log($("#swatch"+i).css("background-color"));
-		}
-	}	
-	
-    //Credit: https://www.youtube.com/watch?v=EPYnGFEcis4&feature=youtube_gdata_player
-	function gotPic(event) {
-        if(event.target.files.length == 1 && 
-           event.target.files[0].type.indexOf("image/") == 0) {
-            $("#yourimage").attr("src",URL.createObjectURL(event.target.files[0]));
-        }
-	}
-	
-	
-        
-    </script>    
         
         
 	</div>
